@@ -16,7 +16,8 @@
 
 
 var MongoClient = require('mongodb').MongoClient,
-    assert = require('assert');
+            ObjectID = require('mongodb').ObjectID,
+            assert = require('assert');
 
 
 function ItemDAO(database) {
@@ -135,7 +136,7 @@ function ItemDAO(database) {
 
         cursor.toArray((err,relatedItems) => {
             if (err) console.error('Error: ',err);
-            console.log(relatedItems)
+            
             var pageItems = relatedItems.map(item => {
                 
                 const myItem = 
@@ -334,14 +335,23 @@ function ItemDAO(database) {
          *
          */
 
-        var item = this.createDummyItem();
+         const query = {_id: itemId};
+
+         var cursor = this.collection.find({'_id':itemId});
+
+         cursor.nextObject((err,doc) => {
+             if (err) console.error(err);             
+             callback(doc);
+         })
+
+        //var item = this.createDummyItem();
 
         // TODO-lab3 Replace all code above (in this method).
 
         // TODO Include the following line in the appropriate
         // place within your code to pass the matching item
         // to the callback.
-        callback(item);
+        
     }
 
 
