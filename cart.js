@@ -16,6 +16,7 @@
 
 
 var MongoClient = require('mongodb').MongoClient,
+    ObjectID = require('mongodb').ObjectID,
     assert = require('assert');
 
 
@@ -23,6 +24,7 @@ function CartDAO(database) {
     "use strict";
 
     this.db = database;
+    this.collection = this.db.collection('cart');
 
 
     this.getCart = function(userId, callback) {
@@ -42,15 +44,26 @@ function CartDAO(database) {
             userId: userId,
             items: []
         }
-        var dummyItem = this.createDummyItem();
-        userCart.items.push(dummyItem);
+        
+        //var dummyItem = this.createDummyItem();
+        //userCart.items.push(dummyItem);
 
         // TODO-lab5 Replace all code above (in this method).
 
         // TODO Include the following line in the appropriate
         // place within your code to pass the userCart to the
         // callback.
-        callback(userCart);
+        
+        
+
+        var cursor = this.collection.find({'userId': userId});
+
+        cursor.nextObject((err,doc) => {
+            userCart.items = doc.items;            
+            callback(userCart);
+        })
+
+        
     }
 
 
@@ -82,7 +95,18 @@ function CartDAO(database) {
          *
          */
 
-        callback(null);
+        var cursor = this.collection.find({'userId': userId,"items._id":itemId});
+        // Only gets the first element within the array
+        cursor.project({'items.$': 1});
+        cursor.limit(1);
+
+        cursor.next((err,item) => {
+            if (err) console.error(err);            
+            if (item != null){
+                item = item.items[0];
+            }            
+            callback(item);                
+        })        
 
         // TODO-lab6 Replace all code above (in this method).
     }
