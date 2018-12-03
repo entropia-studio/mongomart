@@ -202,12 +202,41 @@ function CartDAO(database) {
             userId: userId,
             items: []
         }
+        /*
         var dummyItem = this.createDummyItem();
         dummyItem.quantity = quantity;
         userCart.items.push(dummyItem);
         callback(userCart);
+        */
 
-        // TODO-lab7 Replace all code above (in this method).
+        // TODO-lab7 Replace all code above (in this method).      
+        
+
+        var cursor = this.collection.find({userId: userId});        
+        cursor.limit(1);
+        
+
+        cursor.next((err,item) => {
+            if (err) console.error(err);  
+            
+            var index;
+            item.items.forEach((o,i) => {
+                if (o._id === itemId) index = i; 
+            })            
+            
+            if (quantity == 0){
+                item.items.splice(index,1);
+            }else{
+                item.items[index].quantity = quantity;            
+            }            
+            this.collection.updateOne({userId:userId},{$set: {items: item.items}},(err,doc) => {
+                if (err) console.error(err);
+                userCart.items = item.items;                
+                callback(userCart);
+            });            
+            
+        })
+
 
     }
 
